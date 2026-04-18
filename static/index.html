@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Analytics System</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: radial-gradient(circle at top left, #23153c, #0a0510 60%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient glowing orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 1;
+            opacity: 0.6;
+        }
+        .orb-1 {
+            width: 400px; height: 400px;
+            background: #8e2de2;
+            top: -100px; left: -100px;
+            animation: float 8s ease-in-out infinite;
+        }
+        .orb-2 {
+            width: 300px; height: 300px;
+            background: #4a00e0;
+            bottom: -50px; right: 10%;
+            animation: float 10s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(30px) scale(1.1); }
+            100% { transform: translateY(0px) scale(1); }
+        }
+
+        .container {
+            z-index: 10;
+            width: 90%;
+            max-width: 600px;
+            perspective: 1000px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #b8c6fa, #e0c3fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        p.subtitle {
+            text-align: center;
+            color: #a3aab9;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        .slider-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            margin-bottom: 0.5rem;
+            font-weight: 400;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #e0c3fc;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px rgba(224, 195, 252, 0.5);
+            transition: transform 0.2s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .btn-glow {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #8e2de2, #4a00e0);
+            color: white;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.5s ease;
+        }
+
+        .btn-glow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(142, 45, 226, 0.4);
+        }
+
+        .btn-glow:hover::before {
+            left: 100%;
+        }
+
+        /* Result Section */
+        #result-box {
+            display: none;
+            margin-top: 2rem;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1.5rem;
+            text-align: center;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .insight-tag {
+            display: inline-block;
+            background: rgba(142, 45, 226, 0.2);
+            border: 1px solid rgba(142, 45, 226, 0.5);
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            margin: 0.5rem 0.2rem;
+            color: #e0c3fc;
+        }
+
+        .campaign-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-top: 1rem;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+
+        .loader {
+            display: none;
+            margin: 2rem auto;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-radius: 50%;
+            border-top: 3px solid #e0c3fc;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container">
+        <div class="glass-card">
+            <h1>Customer Analytics</h1>
+            <p class="subtitle">AI-powered segmentation mapping from Survey Data (1-5)</p>
+
+            <form id="analyticsForm">
+                <div class="slider-group">
+                    <label><span>ให้ผิวชุ่มชื้น (Skin Moisturized)</span> <span id="v1">3</span></label>
+                    <input type="range" id="f1" min="1" max="5" value="3" step="1" oninput="document.getElementById('v1').innerText = this.value">
+                </div>
+                <div class="slider-group">
+                    <label><span>ลดแรงเสียดสี (Low Friction)</span> <span id="v2">3</span></label>
+                    <input type="range" id="f2" min="1" max="5" value="3" step="1" oninput="document.getElementById('v2').innerText = this.value">
+                </div>
+                <div class="slider-group">
+                    <label><span>มีสารบำรุง (Skin Nourishment)</span> <span id="v3">3</span></label>
+                    <input type="range" id="f3" min="1" max="5" value="3" step="1" oninput="document.getElementById('v3').innerText = this.value">
+                </div>
+                <div class="slider-group">
+                    <label><span>อ่อนโยนรอบดวงตา (Eye-friendly)</span> <span id="v4">3</span></label>
+                    <input type="range" id="f4" min="1" max="5" value="3" step="1" oninput="document.getElementById('v4').innerText = this.value">
+                </div>
+                <div class="slider-group">
+                    <label><span>ควบคุมความมัน (Oil Control)</span> <span id="v5">3</span></label>
+                    <input type="range" id="f5" min="1" max="5" value="3" step="1" oninput="document.getElementById('v5').innerText = this.value">
+                </div>
+
+                <div class="loader" id="loader"></div>
+                <button type="button" class="btn-glow" id="submitBtn" onclick="analyze()">Generate Market Insights</button>
+            </form>
+
+            <div id="result-box">
+                <span class="insight-tag" id="res-persona">Persona: Evaluating...</span>
+                <span class="insight-tag" id="res-intent">Intent: Unknown</span>
+                <div class="campaign-name" id="res-campaign">Generating...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function analyze() {
+            const btn = document.getElementById('submitBtn');
+            const loader = document.getElementById('loader');
+            const resultBox = document.getElementById('result-box');
+            
+            // Gather values
+            const features = [
+                parseFloat(document.getElementById('f1').value),
+                parseFloat(document.getElementById('f2').value),
+                parseFloat(document.getElementById('f3').value),
+                parseFloat(document.getElementById('f4').value),
+                parseFloat(document.getElementById('f5').value)
+            ];
+
+            // UI feedback
+            btn.style.display = 'none';
+            loader.style.display = 'block';
+            resultBox.style.display = 'none';
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        features: features,
+                        known_interest: -1
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    document.getElementById('res-persona').innerText = `Persona Group ${data.marketing_insights.Persona}`;
+                    document.getElementById('res-intent').innerText = `Predicted Interest ${data.marketing_insights.Intent_Topic}`;
+                    document.getElementById('res-campaign').innerText = data.marketing_insights.Campaign;
+                    resultBox.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Error connecting to API");
+            } finally {
+                loader.style.display = 'none';
+                btn.style.display = 'block';
+                btn.innerText = 'Run Another Analysis';
+            }
+        }
+    </script>
+</body>
+</html>
