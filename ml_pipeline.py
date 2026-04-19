@@ -19,6 +19,8 @@ def load_and_preprocess_data(filepath="BU Data from Survey Cases_final.xlsx"):
     
     numeric_cols = []
     for col in df.columns:
+        if 'Timestamp' in col:
+            continue
         converted = pd.to_numeric(df[col], errors='coerce')
         if converted.notna().sum() > (len(df) * 0.5): # Keep if mostly numeric
             df[col] = converted
@@ -82,16 +84,21 @@ def segment_customers(latent_features, n_clusters=3):
 def map_recommendations(segments, interests):
     """
     Step 4: Recommendation System.
-    Maps cluster outputs to targeted campaign types.
+    Maps cluster outputs to targeted campaign types for Case 3 (Cooling Wipes).
     """
     campaign_map = {
-        0: "Flash Sale & Promotion Push",
-        1: "Loyalty Story & Brand Engagement",
-        2: "Premium Ingredients & Innovation"
+        0: "Stay Ready Campaign: ไอเทมต้องพกก่อนเจอคนที่แคร์/เพื่อนร่วมงาน เพื่อรักษาความมั่นใจ",
+        1: "Cool Down Campaign: ไอเทมดับร้อนระหว่างทำกิจกรรมกลางแจ้งหรือหลังออกกำลังกาย",
+        2: "Instant Refresh Campaign: แคมเปญแจกสินค้าทดลอง (Sampling) สำหรับกลุ่มที่ยังไม่เคยใช้"
     }
+    
     recommendations = []
     for seg, interest in zip(segments, interests):
         camp = campaign_map.get(seg, "General Outreach")
+        
+        if interest == 0:
+            camp = "Awareness Push: " + camp
+            
         recommendations.append({
             "Persona": int(seg), 
             "Intent_Topic": int(interest), 

@@ -25,15 +25,17 @@ async def read_index():
     return FileResponse('static/index.html')
 
 @app.post("/analyze")
+
 def analyze_customer(data: CustomerData):
     """
     Process raw customer data through 4-step pipeline.
     """
     input_dim = scaler.n_features_in_
-    features = data.features[:input_dim]
-    if len(features) < input_dim:
-        # Pad missing features with neutral Likert score (3.0)
-        features += [3.0] * (input_dim - len(features))
+    if len(data.features) < input_dim:
+        # Front-end provides the last 5 features, pad the first (input_dim - 5) features with neutral score 3.0
+        features = [3.0] * (input_dim - len(data.features)) + data.features
+    else:
+        features = data.features[:input_dim]
         
     X = np.array(features).reshape(1, -1)
     X_scaled = scaler.transform(X)
